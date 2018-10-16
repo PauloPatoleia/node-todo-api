@@ -1,23 +1,37 @@
 const mongoose = require('mongoose');
 
 mongoose.Promise = global.Promise
-mongoose.connect('mongodb://localhost:27017/TodoApp'), { useNewUrlParser: true } ;
+mongoose.connect('mongodb://localhost:27017/TodoApp', { useNewUrlParser: true }) ;
 
 const Todo = mongoose.model('Todo', {
     text: {
-        type: 'String'
+        type: 'String',
+        required: true,
+        minlenght: 1,
+        trim: true
     },
     completed: {
-        type: 'Boolean'
+        type: 'Boolean',
+        default: false
     },
     completedAt: {
-        type: 'Number'
+        type: 'Number',
+        default: null
     }
 
 });
 
-var newTodo = new Todo({
-    text: 'Cook dinner'
+const User = mongoose.model('User', {
+    email: {
+        type: 'String',
+        trim: true,
+        minlenght: 1,
+        required: true
+    }
+})
+
+var newTodo = new User({
+    email: '  '
 })
 
 newTodo.save().then((doc) => {
