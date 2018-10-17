@@ -1,45 +1,36 @@
-const mongoose = require('mongoose');
+// 3RD PARTY
+const express = require('express')
+const bodyParser = require('body-parser') 
+// LOCAL
+const {mongoose} = require('./db/mongoose')
+const {Todo} = require('./models/todo')
+const {User} = require('./models/user')
 
-mongoose.Promise = global.Promise
-mongoose.connect('mongodb://localhost:27017/TodoApp', { useNewUrlParser: true }) ;
+var app = express()
+app.use(bodyParser.json())
 
-const Todo = mongoose.model('Todo', {
-    text: {
-        type: 'String',
-        required: true,
-        minlenght: 1,
-        trim: true
-    },
-    completed: {
-        type: 'Boolean',
-        default: false
-    },
-    completedAt: {
-        type: 'Number',
-        default: null
-    }
-
-});
-
-const User = mongoose.model('User', {
-    email: {
-        type: 'String',
-        trim: true,
-        minlenght: 1,
-        required: true
-    }
-})
-
-var newTodo = new User({
-    email: '  '
-})
-
-newTodo.save().then((doc) => {
-    console.log('saved todo: ' + doc);
-    
-}, (e) => {
-    console.log('unable to save todo')
-})
-
+// cd \
 // cd "Program Files\MongoDB\Server\4.0\bin"
 // mongod --port 27017 --dbpath "C:\Users\vmpat\mongo-data"
+
+
+app.post('/todos', (req, res) => {
+    let todo = new Todo({
+        text: req.body.text
+    });
+
+    todo.save().then((doc) => {
+        res.send(doc);
+    }, (e) => {
+        res.status(400).send(e)
+    })
+
+})
+
+
+
+
+app.listen(3000, () => {
+    console.log('Started on port 3000');
+    
+})
