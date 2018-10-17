@@ -1,36 +1,42 @@
-// 3RD PARTY
-const express = require('express')
-const bodyParser = require('body-parser') 
-// LOCAL
-const {mongoose} = require('./db/mongoose')
-const {Todo} = require('./models/todo')
-const {User} = require('./models/user')
+// External dependencies
+var express = require('express');
+var bodyParser = require('body-parser');
 
-var app = express()
-app.use(bodyParser.json())
+// Local dependencies 
+var {mongoose} = require('./db/mongoose');
+var {Todo} = require('./models/todo');
+var {User} = require('./models/user');
 
-// cd \
-// cd "Program Files\MongoDB\Server\4.0\bin"
-// mongod --port 27017 --dbpath "C:\Users\vmpat\mongo-data"
+// Express setup
+var app = express();
+app.use(bodyParser.json());
 
-
+// POST Route
 app.post('/todos', (req, res) => {
-    let todo = new Todo({
-        text: req.body.text
-    });
+  var todo = new Todo({
+    text: req.body.text
+  });
 
-    todo.save().then((doc) => {
-        res.send(doc);
+  todo.save().then((doc) => {
+    res.send(doc);
+  }, (e) => {
+    res.status(400).send(e);
+  });
+});
+
+
+// GET Route
+app.get('/todos', (req, res) => {
+    Todo.find({}).then((todos) => {
+        res.send({todos})
     }, (e) => {
-        res.status(400).send(e)
+        res.status(400).send(e);
     })
-
 })
-
-
 
 
 app.listen(3000, () => {
-    console.log('Started on port 3000');
-    
-})
+  console.log('Started on port 3000');
+});
+
+module.exports = {app};
