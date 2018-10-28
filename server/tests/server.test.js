@@ -116,3 +116,14 @@ describe('GET /todos/:id', () => {
       .end(done)
   })
 })
+
+obj = {
+  name: 'carl',
+  sayName: function() {
+    
+    return func
+  }
+}
+
+
+
