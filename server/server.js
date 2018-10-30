@@ -12,7 +12,7 @@ var {User} = require('./models/user');
 
 // Express setup
 var app = express();
-let port = process.env.PORT || 3000
+const port = process.env.PORT || 3000
 app.use(bodyParser.json());
 
 // POST Route
@@ -27,6 +27,11 @@ app.post('/todos', (req, res) => {
     res.status(400).send(e);
   });
 });
+
+//Todo.create({ text: 'buy a small chair' }, function (err) {
+//  if (err) return err;
+//  // saved!
+//});
 
 
 // GET Route
