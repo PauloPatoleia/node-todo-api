@@ -199,9 +199,8 @@ describe('PATCH /todo/:id', () => {
       expect(res.body.todo.completedAt).toNotExist()
     })
     .end(done)
- 
-  })
 
+  })
 })
 
 
