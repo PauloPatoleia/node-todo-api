@@ -3,6 +3,7 @@ const express = require('express');
 const bodyParser = require('body-parser');
 const {ObjectID} = require('mongodb')
 const _ = require('lodash')
+const {authenticate} = require('./middleware/authenticate')
 
 // Local dependencies 
 var {mongoose} = require('./db/mongoose');
@@ -120,6 +121,8 @@ app.post('/users', (req, res) => {
     res.status(400).send(err)
   });
 })
+
+
 
 app.listen(port, () => {
   console.log(`Started on port ${port}`);
