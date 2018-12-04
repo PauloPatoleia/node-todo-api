@@ -1,22 +1,20 @@
-// External dependencies
+require('./config/config');
+
+const _ = require('lodash');
 const express = require('express');
 const bodyParser = require('body-parser');
-const {ObjectID} = require('mongodb')
-const _ = require('lodash')
-const {authenticate} = require('./middleware/authenticate')
+const {ObjectID} = require('mongodb');
 
-// Local dependencies 
 var {mongoose} = require('./db/mongoose');
 var {Todo} = require('./models/todo');
 var {User} = require('./models/user');
+var {authenticate} = require('./middleware/authenticate');
 
-
-// Express setup
 var app = express();
-const port = process.env.PORT || 3000
+const port = process.env.PORT;
+
 app.use(bodyParser.json());
 
-// POST Route
 app.post('/todos', (req, res) => {
   var todo = new Todo({
     text: req.body.text
@@ -29,60 +27,55 @@ app.post('/todos', (req, res) => {
   });
 });
 
-
-// GET Route
 app.get('/todos', (req, res) => {
-    Todo.find({}).then((todos) => {
-        res.send({todos})
-    }, (e) => {
-        res.status(400).send(e);
-    })
-})
+  Todo.find().then((todos) => {
+    res.send({todos});
+  }, (e) => {
+    res.status(400).send(e);
+  });
+});
 
-// GET Individual TODO route
 app.get('/todos/:id', (req, res) => {
-  if(!ObjectID.isValid(req.params.id)) {
+  var id = req.params.id;
+
+  if (!ObjectID.isValid(id)) {
     return res.status(404).send();
   }
 
-  Todo.findById(req.params.id).then((todo) => {
-    
-    if(!todo) {
-      res.status(404).send()
+  Todo.findById(id).then((todo) => {
+    if (!todo) {
+      return res.status(404).send();
     }
-    
-    res.send({todo})
 
-  }).catch((err) => {
-    res.status(404).send()
-  })
-})
+    res.send({todo});
+  }).catch((e) => {
+    res.status(400).send();
+  });
+});
 
 app.delete('/todos/:id', (req, res) => {
+  var id = req.params.id;
 
-  if(!ObjectID.isValid(req.params.id)) {
+  if (!ObjectID.isValid(id)) {
     return res.status(404).send();
   }
 
-  Todo.findByIdAndRemove(req.params.id).then((todo) => {
-    
-    if(!todo) {
-      res.status(404).send()
+  Todo.findByIdAndRemove(id).then((todo) => {
+    if (!todo) {
+      return res.status(404).send();
     }
-    
-    res.send({todo})
 
-  }).catch((err) => {
-    res.status(404).send()
-  })
-})
- 
+    res.send({todo});
+  }).catch((e) => {
+    res.status(400).send();
+  });
+});
 
 app.patch('/todos/:id', (req, res) => {
-  var id = req.params.id 
+  var id = req.params.id;
   var body = _.pick(req.body, ['text', 'completed']);
 
-  if(!ObjectID.isValid(req.params.id)) {
+  if (!ObjectID.isValid(id)) {
     return res.status(404).send();
   }
 
@@ -94,38 +87,49 @@ app.patch('/todos/:id', (req, res) => {
   }
 
   Todo.findByIdAndUpdate(id, {$set: body}, {new: true}).then((todo) => {
-    if(!todo) {
-      return res.status(404).send()
+    if (!todo) {
+      return res.status(404).send();
     }
 
     res.send({todo});
-
-  }).catch(err => {
-    res.status(404).send()
+  }).catch((e) => {
+    res.status(400).send();
   })
+});
 
-
-})
-
+// POST /users
 app.post('/users', (req, res) => {
-
-  const body = _.pick(req.body, ['email', 'password']);
-
-  const user = new User(body);
+  var body = _.pick(req.body, ['email', 'password']);
+  var user = new User(body);
 
   user.save().then(() => {
-    return user.generateAuthToken()
+    return user.generateAuthToken();
   }).then((token) => {
-    res.header('x-auth', token).send(user)
-  }).catch((err) => {
-    res.status(400).send(err)
+    res.header('x-auth', token).send(user);
+  }).catch((e) => {
+    res.status(400).send(e);
+  })
+});
+
+app.get('/users/me', authenticate, (req, res) => {
+  res.send(req.user);
+});
+
+// POST /users/login {email, password}
+app.post('/users/login', (req, res) => {
+  var body = _.pick(req.body, ['email', 'password']);
+
+  User.findByCredentials(body.email, body.password).then((user) => {
+    return user.generateAuthToken().then((token) => {
+      res.header('x-auth', token).send(user);
+    });
+  }).catch((e) => {
+    res.status(400).send();
   });
-})
-
-
+});
 
 app.listen(port, () => {
-  console.log(`Started on port ${port}`);
-}); 
+  console.log(`Started up at port ${port}`);
+});
 
 module.exports = {app};
